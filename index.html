@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alternative Medicine Recommendation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #000000, #000000);
+    }
+
+    header {
+      background-color: #1565c0;
+      color: white;
+      padding: 25px 10px;
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #3a8dd1;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid #f7f7f7;
+      border-radius: 10px;
+      font-size: 17px;
+      margin-bottom: 30px;
+      outline-color: #1976d2;
+    }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .medicine-result {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+      transition: 0.3s ease;
+    }
+
+    .medicine-result:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .medicine-result img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .medicine-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #0d47a1;
+      margin-bottom: 8px;
+    }
+
+    .medicine-info {
+      font-size: 15px;
+      color: #444;
+      margin-bottom: 6px;
+    }
+
+    .no-result {
+      text-align: center;
+      color: #999;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    Alternative Medicine Recommendation System
+  </header>
+
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search by composition or medicine name..." onkeyup="performSearch()" />
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    let medicines = [];
+
+    async function fetchData() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/medicines");
+        medicines = await response.json();
+      } catch (err) {
+        document.getElementById("results").innerHTML = "<p class='no-result'>Failed to fetch data from backend.</p>";
+      }
+    }
+
+    function performSearch() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = medicines.filter(med =>
+        med.medicine_name.toLowerCase().includes(query) ||
+        med.composition.toLowerCase().includes(query)
+      );
+      displayResults(filtered);
+    }
+
+    function displayResults(results) {
+      const container = document.getElementById("results");
+      container.innerHTML = "";
+
+      if (results.length === 0) {
+        container.innerHTML = "<p class='no-result'>No medicines found.</p>";
+        return;
+      }
+
+      results.forEach(med => {
+        const html = `
+          <div class="medicine-result">
+            <img src="${med.image_url}" alt="${med.medicine_name}" />
+            <div class="medicine-name">${med.medicine_name}</div>
+            <div class="medicine-info"><strong>Composition:</strong> ${med.composition}</div>
+            <div class="medicine-info"><strong>Uses:</strong> ${med.uses}</div>
+            <div class="medicine-info"><strong>Side Effects:</strong> ${med.side_effects}</div>
+          </div>
+        `;
+        container.innerHTML += html;
+      });
+    }
+
+    window.onload = fetchData;
+  </script>
+</body>
+
+</html>
